@@ -1,0 +1,7 @@
+C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\bin\Debug\Hyperboliq Assesment.exe.config
+C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\bin\Debug\Hyperboliq Assesment.exe
+C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\bin\Debug\Hyperboliq Assesment.pdb
+C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.csprojAssemblyReference.cache
+C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.csproj.CoreCompileInputs.cache
+C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.exe
+C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.pdb
