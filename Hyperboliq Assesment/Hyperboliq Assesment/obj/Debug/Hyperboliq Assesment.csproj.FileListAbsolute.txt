@@ -5,3 +5,10 @@ C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesm
 C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.csproj.CoreCompileInputs.cache
 C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.exe
 C:\Users\Christelle.Swanepoel\Desktop\Cor\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.pdb
+K:\Github\C-Assesment\Hyperboliq Assesment\Hyperboliq Assesment\bin\Debug\Hyperboliq Assesment.exe.config
+K:\Github\C-Assesment\Hyperboliq Assesment\Hyperboliq Assesment\bin\Debug\Hyperboliq Assesment.exe
+K:\Github\C-Assesment\Hyperboliq Assesment\Hyperboliq Assesment\bin\Debug\Hyperboliq Assesment.pdb
+K:\Github\C-Assesment\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.csprojAssemblyReference.cache
+K:\Github\C-Assesment\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.csproj.CoreCompileInputs.cache
+K:\Github\C-Assesment\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.exe
+K:\Github\C-Assesment\Hyperboliq Assesment\Hyperboliq Assesment\obj\Debug\Hyperboliq Assesment.pdb
