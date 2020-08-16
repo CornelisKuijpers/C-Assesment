@@ -17,7 +17,9 @@ namespace Hyperboliq_Assesment
 
         //Global Variables
         private static bool hasImageSet = true;
-        
+        private static Bitmap[,] originalSplit;
+        private static Bitmap[,] imagesSplit;
+
         static void Main(string[] args)
         {
             try
@@ -87,6 +89,9 @@ namespace Hyperboliq_Assesment
 
         private static void SplitImmage(string filename,string directory)
         {
+            originalSplit = new Bitmap[20, 20];
+            imagesSplit = new Bitmap[20, 20];
+
             Image img = Image.FromFile(filename);
             int widthThird = (int)((double)img.Width / 20.0);
             int heightThird = (int)((double)img.Height / 20.0);
@@ -103,9 +108,18 @@ namespace Hyperboliq_Assesment
 
 
                     if (!hasImageSet)
-                        bmps[i, j].Save($"{directory}\\imageSet\\{i}{j}.jpg", ImageFormat.Jpeg);
+                    {
+                        if (!System.IO.Directory.Exists($"{ directory}\\imageSet"))
+                            System.IO.Directory.CreateDirectory($"{directory}\\imageSet");
 
+                        imagesSplit[i, j] = bmps[i, j];
+
+                        bmps[i, j].Save($"{directory}\\imageSet\\{i}{j}.jpg", ImageFormat.Jpeg);
+                    }
+
+                    originalSplit[i, j] = bmps[i, j];
                 }
+
         }
 
     }
