@@ -53,6 +53,8 @@ namespace Hyperboliq_Assesment
 
                     imagesSplit = loadSplitImagesFromFolder($"{directory}\\imageSet");
 
+                    RebuildImage(myTestOriginal);
+
                 }
                 else if (args.Length == 1)
                 {
@@ -103,33 +105,84 @@ namespace Hyperboliq_Assesment
         {
             try
             {
-
-                //Create array that contains image in order
+                //Create list that contains image in order (Added Color to debug color averages)
                 Image[] myFinalImages = new Image[originalImages.Count];
+                Color[] myFinalRGBAvg = new Color[originalImages.Count];
 
-                foreach (KeyValuePair<Image,Color> valuePair in myImages)
+                string[] results = new string[400];
+
+                bool hasPair = false;
+
+                int k = 0;
+
+                foreach (KeyValuePair<Image, Color> valuePair in myImages)
                 {
-                    for (int i = 0; i<originalImages.Count; i++)
+
+                    hasPair = false;
+
+                    for (int i = 0; i < originalImages.Count; i++)
                     {
                         KeyValuePair<Image, Color> originalValuePair = originalImages[i];
 
-                        if (Calculated_distance(valuePair.Value,originalValuePair.Value) == 0)
+                        
+                        if (Calculated_distance(valuePair.Value, originalValuePair.Value) == 0)
                         {
                             //This check is for when a tile has the exact same average RGB then a previous tile
                             if (myFinalImages[i] == null)
                             {
                                 myFinalImages[i] = valuePair.Key;
+                                myFinalRGBAvg[i] = valuePair.Value;
+                                hasPair = true;
+
                                 break;
+                            }
+                            else
+                            {
+                                //System.Console.WriteLine($"Duplicate {k} : {i} : {valuePair.Value} : {originalValuePair.Value}");
                             }
                         }
 
                     }
 
+                    if (!hasPair)
+                    {
+                        double smallestValue = 100;
+                        int index = 0;
+
+                        for (int i = 0; i < originalImages.Count; i++)
+                        {
+                            KeyValuePair<Image, Color> originalValuePair = originalImages[i];
+
+                            if (myFinalImages[i] == null)
+                                continue;
+
+                            index = i;
+
+                            double calcValue = Calculated_distance(valuePair.Value, originalValuePair.Value);
+
+                            if (calcValue == 0)
+                                index = i;
+
+                            if ( calcValue < smallestValue && calcValue > 0 && myFinalImages[i] == null)
+                            {
+                                smallestValue = calcValue;
+                                myFinalImages[1] = valuePair.Key;
+                            }
+
+                        }
+
+                            System.Console.WriteLine($"No pair {k} : {valuePair.Value} : {smallestValue} : index {index}");
+                    }
+                    ++k;
+
                 }
+
+
 
                 RebuildImage(myFinalImages);
 
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 System.Console.WriteLine(ex.Message);
             }
@@ -139,7 +192,7 @@ namespace Hyperboliq_Assesment
         private static double Calculated_distance(Color split, Color original)
         {
             double returnInt = 0;
-            
+
             //first the RGB needs to be converted to lab, this process is from RGB -> XYZ -> Lab
             float[] color1 = RGBToLab(split);
             float[] color2 = RGBToLab(original);
@@ -159,7 +212,7 @@ namespace Hyperboliq_Assesment
             //               + ((CIE - a * 1 - CIE - a * 2) ^ 2)
             //               + ((CIE - b * 1 - CIE - b * 2) ^ 2))
 
-            returnInt = Math.Sqrt(Math.Pow((L1-L2),2) + Math.Pow((a1 - a2), 2) + Math.Pow((b1 - b2), 2));
+            returnInt = Math.Sqrt(Math.Pow((L1 - L2), 2) + Math.Pow((a1 - a2), 2) + Math.Pow((b1 - b2), 2));
 
             return returnInt;
         }
@@ -168,7 +221,7 @@ namespace Hyperboliq_Assesment
         {
             float[] xyz = new float[3];
             float[] lab = new float[3];
-            float[] rgb = new float[] { color.R, color.G, color.B};
+            float[] rgb = new float[] { color.R, color.G, color.B };
 
             rgb[0] = color.R / 255.0f;
             rgb[1] = color.G / 255.0f;
@@ -323,7 +376,6 @@ namespace Hyperboliq_Assesment
 
         }
 
-
         private static List<KeyValuePair<Image, Color>> GetAvgRGB(List<KeyValuePair<Image, Color>> myImages)
         {
             try
@@ -390,10 +442,14 @@ namespace Hyperboliq_Assesment
 
         }
 
+        private static Image[] myTestOriginal = new Image[400];
+
         private static void SplitImage(string filename, string mydirectory)
         {
             try
             {
+
+                int c = 0;
 
                 Image img = Image.FromFile(filename);
                 int widthThird = (int)((double)img.Width / 20.0);
@@ -415,9 +471,12 @@ namespace Hyperboliq_Assesment
                             if (!System.IO.Directory.Exists($"{ mydirectory}\\imageSet"))
                                 System.IO.Directory.CreateDirectory($"{mydirectory}\\imageSet");
 
-                            bmps[i, j].Save($"{mydirectory}\\imageSet\\{Guid.NewGuid().ToString()}.jpg", ImageFormat.Jpeg);
+                            bmps[i, j].Save($"{mydirectory}\\imageSet\\{i}{j}.jpg", ImageFormat.Jpeg);
 
                             originalSplit.Add(new KeyValuePair<Image, Color>(bmps[i, j], Color.Black));
+
+                            myTestOriginal[c] = bmps[i, j];
+                            ++c;
                         }
                         else
                         {
