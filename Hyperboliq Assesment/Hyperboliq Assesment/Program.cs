@@ -21,6 +21,7 @@ namespace Hyperboliq_Assesment
         private static bool hasImageSet = true;
         private static List<KeyValuePair<Image, Color>> originalSplit = new List<KeyValuePair<Image, Color>>();
         private static List<KeyValuePair<Image, Color>> imagesSplit = new List<KeyValuePair<Image, Color>>();
+        private static string directory = "";
 
         static void Main(string[] args)
         {
@@ -31,8 +32,6 @@ namespace Hyperboliq_Assesment
 
                 string filename = "";
                 string answer = "";
-                string directory = "";
-
 
                 if (args.Length == 0)
                 {
@@ -51,6 +50,8 @@ namespace Hyperboliq_Assesment
                         hasImageSet = false;
 
                     SplitImage(filename, directory);
+
+                    imagesSplit = loadSplitImagesFromFolder($"{directory}\\imageSet");
 
                 }
                 else if (args.Length == 1)
@@ -82,12 +83,9 @@ namespace Hyperboliq_Assesment
                 imagesSplit = GetAvgRGB(imagesSplit);
                 originalSplit = GetAvgRGB(originalSplit);
 
-                //Get Distance 
+                //Get Distance and rebuild image
                 //TODO
                 GetDistances(imagesSplit, originalSplit);
-
-                //Rebuild Image
-                RebuildImage(imagesSplit);
 
                 System.Console.WriteLine("All done");
                 System.Console.ReadLine();
@@ -103,19 +101,44 @@ namespace Hyperboliq_Assesment
 
         private static void GetDistances(List<KeyValuePair<Image, Color>> myImages, List<KeyValuePair<Image, Color>> originalImages)
         {
-            //The idea here is to loop through all images in both lists, keeping tab on the closest index by keeping track of the lowest distance and Index
-            int closestIndex = -1;
-            int closestDistance = 0;
-            int myIndex = -1;
+            try
+            {
 
-            System.Console.WriteLine(Calculated_distance(Color.Black,Color.White));
+                //Create array that contains image in order
+                Image[] myFinalImages = new Image[originalImages.Count];
 
+                foreach (KeyValuePair<Image,Color> valuePair in myImages)
+                {
+                    for (int i = 0; i<originalImages.Count; i++)
+                    {
+                        KeyValuePair<Image, Color> originalValuePair = originalImages[i];
+
+                        if (Calculated_distance(valuePair.Value,originalValuePair.Value) == 0)
+                        {
+                            //This check is for when a tile has the exact same average RGB then a previous tile
+                            if (myFinalImages[i] == null)
+                            {
+                                myFinalImages[i] = valuePair.Key;
+                                break;
+                            }
+                        }
+
+                    }
+
+                }
+
+                RebuildImage(myFinalImages);
+
+            }catch (Exception ex)
+            {
+                System.Console.WriteLine(ex.Message);
+            }
 
         }
 
         private static double Calculated_distance(Color split, Color original)
         {
-            int returnInt = 0;
+            double returnInt = 0;
             
             //first the RGB needs to be converted to lab, this process is from RGB -> XYZ -> Lab
             float[] color1 = RGBToLab(split);
@@ -136,7 +159,7 @@ namespace Hyperboliq_Assesment
             //               + ((CIE - a * 1 - CIE - a * 2) ^ 2)
             //               + ((CIE - b * 1 - CIE - b * 2) ^ 2))
 
-            returnInt = (int)Math.Sqrt(Math.Pow((L1-L2),2) + Math.Pow((a1 - a2), 2) + Math.Pow((b1 - b2), 2));
+            returnInt = Math.Sqrt(Math.Pow((L1-L2),2) + Math.Pow((a1 - a2), 2) + Math.Pow((b1 - b2), 2));
 
             return returnInt;
         }
@@ -227,23 +250,26 @@ namespace Hyperboliq_Assesment
         }
 
 
-        private static void RebuildImage(List<KeyValuePair<Image, Color>> myImages)
+        private static void RebuildImage(Image[] myImages)
         {
             int column = 0;
             int row = 0;
             int cal_width = 0;
             int cal_height = 0;
 
-            foreach (KeyValuePair<Image, Color> myImagesKV in myImages)
+            foreach (Image myImagesKV in myImages)
             {
+                if (myImagesKV == null)
+                    continue;
+
                 if (column < 20 && row == 0)
-                    cal_width += myImagesKV.Key.Width;
+                    cal_width += myImagesKV.Width;
 
                 if (column == 19)
                 {
                     ++row;
                     column = 0;
-                    cal_height += myImagesKV.Key.Height;
+                    cal_height += myImagesKV.Height;
                 }
 
                 ++column;
@@ -261,8 +287,11 @@ namespace Hyperboliq_Assesment
                     column = 0;
                     row = 0;
 
-                    foreach (KeyValuePair<Image, Color> myImagesKV in myImages)
+                    foreach (Image myImagesKV in myImages)
                     {
+                        if (myImagesKV == null)
+                            continue;
+
                         if (column == 20)
                         {
                             int a = 1;
@@ -270,16 +299,16 @@ namespace Hyperboliq_Assesment
 
                         if (column < 20)
                         {
-                            g.DrawImage(myImagesKV.Key, current_width, current_height, myImagesKV.Key.Width, myImagesKV.Key.Height);
-                            current_width += myImagesKV.Key.Width;
+                            g.DrawImage(myImagesKV, current_width, current_height, myImagesKV.Width, myImagesKV.Height);
+                            current_width += myImagesKV.Width;
                         }
                         else
                         {
-                            current_height += myImagesKV.Key.Height;
+                            current_height += myImagesKV.Height;
                             current_width = 0;
                             column = 0;
-                            g.DrawImage(myImagesKV.Key, current_width, current_height, myImagesKV.Key.Width, myImagesKV.Key.Height);
-                            current_width += myImagesKV.Key.Width;
+                            g.DrawImage(myImagesKV, current_width, current_height, myImagesKV.Width, myImagesKV.Height);
+                            current_width += myImagesKV.Width;
                         }
 
                         ++column;
@@ -288,7 +317,7 @@ namespace Hyperboliq_Assesment
 
                 }
 
-                bmp.Save("K:\\Rescources\\rebuilt.jpg");
+                bmp.Save($"{directory}\\rebuilt.jpg");
             }
 
 
@@ -336,14 +365,14 @@ namespace Hyperboliq_Assesment
 
         }
 
-        private static List<KeyValuePair<Image, Color>> loadSplitImagesFromFolder(string directory)
+        private static List<KeyValuePair<Image, Color>> loadSplitImagesFromFolder(string mydirectory)
         {
 
             List<KeyValuePair<Image, Color>> returnList = new List<KeyValuePair<Image, Color>>();
 
             try
             {
-                foreach (string file in System.IO.Directory.GetFiles(directory, "*.jpg"))
+                foreach (string file in System.IO.Directory.GetFiles(mydirectory, "*.jpg"))
                 {
 
                     Image img = Image.FromFile(file);
@@ -361,7 +390,7 @@ namespace Hyperboliq_Assesment
 
         }
 
-        private static void SplitImage(string filename, string directory)
+        private static void SplitImage(string filename, string mydirectory)
         {
             try
             {
@@ -383,12 +412,11 @@ namespace Hyperboliq_Assesment
 
                         if (!hasImageSet)
                         {
-                            if (!System.IO.Directory.Exists($"{ directory}\\imageSet"))
-                                System.IO.Directory.CreateDirectory($"{directory}\\imageSet");
+                            if (!System.IO.Directory.Exists($"{ mydirectory}\\imageSet"))
+                                System.IO.Directory.CreateDirectory($"{mydirectory}\\imageSet");
 
-                            bmps[i, j].Save($"{directory}\\imageSet\\{i}{j}.jpg", ImageFormat.Jpeg);
+                            bmps[i, j].Save($"{mydirectory}\\imageSet\\{Guid.NewGuid().ToString()}.jpg", ImageFormat.Jpeg);
 
-                            imagesSplit.Add(new KeyValuePair<Image, Color>(bmps[i, j], Color.Black));
                             originalSplit.Add(new KeyValuePair<Image, Color>(bmps[i, j], Color.Black));
                         }
                         else
