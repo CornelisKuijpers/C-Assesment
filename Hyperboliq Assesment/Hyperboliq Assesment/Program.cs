@@ -453,8 +453,6 @@ namespace Hyperboliq_Assesment
 
         }
 
-        private static Image[] myTestOriginal = new Image[400];
-
         private static void SplitImage(string filename, string mydirectory)
         {
             try
@@ -486,8 +484,6 @@ namespace Hyperboliq_Assesment
 
                             originalSplit.Add(new KeyValuePair<Image, Color>(bmps[i, j], Color.Black));
 
-                            myTestOriginal[c] = bmps[i, j];
-                            ++c;
                         }
                         else
                         {
