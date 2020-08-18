@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,10 +24,22 @@ namespace Hyperboliq_Assesment
         private static List<KeyValuePair<Image, Color>> imagesSplit = new List<KeyValuePair<Image, Color>>();
         private static string directory = "";
 
+        private static void printInfo()
+        {
+
+            Console.WriteLine("This application was written by Cornelis Kuijpers \n" +
+                "Argument 1 is the path to the image you would wish to use path\\*.jpg \n" +
+                "Argument 2 is the path to the image set bmp files for example path\\ \n" +
+                "if no arguments is supplied it will be asked to supply information \n" +
+                "if only 1 argument is supplied (This must be the image) then a image set will be created");
+
+        }
+
         static void Main(string[] args)
         {
             try
             {
+                printInfo();
                 // args 1 : FileName
                 // args 2 - ... Image set location for rest of images 
 
@@ -47,13 +60,18 @@ namespace Hyperboliq_Assesment
                     answer = System.Console.ReadLine();
 
                     if (answer.ToLower() == "c")
+                    {
                         hasImageSet = false;
-
+                    }
+                    else
+                    {
+                        imagesSplit = loadSplitImagesFromFolder(answer);
+                    }
+                        
                     SplitImage(filename, directory);
 
-                    imagesSplit = loadSplitImagesFromFolder($"{directory}\\imageSet");
-
-                    RebuildImage(myTestOriginal);
+                    if (!hasImageSet)
+                        imagesSplit = loadSplitImagesFromFolder($"{directory}\\imageSet");
 
                 }
                 else if (args.Length == 1)
@@ -65,6 +83,8 @@ namespace Hyperboliq_Assesment
                     hasImageSet = false;
 
                     SplitImage(filename, directory);
+
+                    imagesSplit = loadSplitImagesFromFolder($"{directory}\\imageSet");
                 }
                 else
                 {
@@ -77,7 +97,7 @@ namespace Hyperboliq_Assesment
 
                     SplitImage(filename, directory);
 
-                    imagesSplit = loadSplitImagesFromFolder(directory);
+                    imagesSplit = loadSplitImagesFromFolder(args[1]);
 
                 }
 
@@ -86,7 +106,6 @@ namespace Hyperboliq_Assesment
                 originalSplit = GetAvgRGB(originalSplit);
 
                 //Get Distance and rebuild image
-                //TODO
                 GetDistances(imagesSplit, originalSplit);
 
                 System.Console.WriteLine("All done");
@@ -143,37 +162,6 @@ namespace Hyperboliq_Assesment
                         }
 
                     }
-
-                    if (!hasPair)
-                    {
-                        double smallestValue = 100;
-                        int index = 0;
-
-                        for (int i = 0; i < originalImages.Count; i++)
-                        {
-                            KeyValuePair<Image, Color> originalValuePair = originalImages[i];
-
-                            if (myFinalImages[i] == null)
-                                continue;
-
-                            index = i;
-
-                            double calcValue = Calculated_distance(valuePair.Value, originalValuePair.Value);
-
-                            if (calcValue == 0)
-                                index = i;
-
-                            if ( calcValue < smallestValue && calcValue > 0 && myFinalImages[i] == null)
-                            {
-                                smallestValue = calcValue;
-                                myFinalImages[1] = valuePair.Key;
-                            }
-
-                        }
-
-                            System.Console.WriteLine($"No pair {k} : {valuePair.Value} : {smallestValue} : index {index}");
-                    }
-                    ++k;
 
                 }
 
@@ -302,7 +290,6 @@ namespace Hyperboliq_Assesment
 
         }
 
-
         private static void RebuildImage(Image[] myImages)
         {
             int column = 0;
@@ -376,6 +363,46 @@ namespace Hyperboliq_Assesment
 
         }
 
+        private static Color GetAverageColor(Bitmap bm)
+        {
+            Rectangle bounds = new Rectangle(0, 0, bm.Width, bm.Height);
+            BitmapData bmd = bm.LockBits(bounds, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            // The stride is the width of 1 row of pixels in bytes. As 1 pixels requires 3 bytes of color   
+            // information, you would think this would always be 3 * bm.Width - But it isn't. Each row of  
+            // pixels is aligned so that it starts at a 4 byte boundary, this is done by padding rows with   
+            // extra bytes if required. (might be 8 byte boundary on x64)          
+            int stride = bmd.Stride;
+            // An array to store the color information:  
+            byte[] pixels = new byte[bmd.Stride * bm.Height - 1 + 1];
+            // Copy it all out of the bitmap:  
+            Marshal.Copy(bmd.Scan0, pixels, 0, pixels.Length);
+            bm.UnlockBits(bmd);
+            int totalR = 0;
+            int totalG = 0;
+            int totalB = 0;
+            for (int y = 0; y <= bm.Height - 1; y++)
+            {
+                for (int x = 0; x <= bm.Width - 1; x++)
+                {
+                    // Get the index of a pixel in the array.  
+                    // The index will be the number of bytes in all the rows above the pixel,   
+                    // which is (y * stride)   
+                    // plus the number of bytes in all the pixels to the left of it   
+                    // so add x*3:  
+                    int index = (y * stride) + (x * 3);
+                    totalB += pixels[index];
+                    totalG += pixels[index + 1];
+                    totalR += pixels[index + 2];
+                }
+            }
+            // Average the components  
+            int pixelCount = bm.Width * bm.Height;
+            int averageR = System.Convert.ToInt32(totalR / pixelCount);
+            int averageG = System.Convert.ToInt32(totalG / pixelCount);
+            int averageB = System.Convert.ToInt32(totalB / pixelCount);
+            return Color.FromArgb(averageR, averageG, averageB);
+        }
+
         private static List<KeyValuePair<Image, Color>> GetAvgRGB(List<KeyValuePair<Image, Color>> myImages)
         {
             try
@@ -388,24 +415,8 @@ namespace Hyperboliq_Assesment
 
                     Bitmap orig = new Bitmap(myImagesKV.Key);
 
-                    Bitmap bmp = new Bitmap(1, 1);
+                    returnList.Add(new KeyValuePair<Image, Color>(myImagesKV.Key, GetAverageColor(orig)));
 
-                    using (Graphics g = Graphics.FromImage(bmp))
-                    {
-                        // updated: the Interpolation mode needs to be set to 
-                        // HighQualityBilinear or HighQualityBicubic or this method
-                        // doesn't work at all.  With either setting, the results are
-                        // slightly different from the averaging method.
-                        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                        g.DrawImage(orig, new Rectangle(0, 0, 1, 1));
-                    }
-                    Color pixel = bmp.GetPixel(0, 0);
-                    // pixel will contain average values for entire orig Bitmap
-                    byte avgR = pixel.R; // etc.
-                    byte avgG = pixel.G;
-                    byte avgB = pixel.B;
-
-                    returnList.Add(new KeyValuePair<Image, Color>(myImagesKV.Key, System.Drawing.Color.FromArgb(avgR, avgG, avgB)));
                 }
                 return returnList;
             }
@@ -424,7 +435,7 @@ namespace Hyperboliq_Assesment
 
             try
             {
-                foreach (string file in System.IO.Directory.GetFiles(mydirectory, "*.jpg"))
+                foreach (string file in System.IO.Directory.GetFiles(mydirectory, "*.bmp"))
                 {
 
                     Image img = Image.FromFile(file);
@@ -452,8 +463,8 @@ namespace Hyperboliq_Assesment
                 int c = 0;
 
                 Image img = Image.FromFile(filename);
-                int widthThird = (int)((double)img.Width / 20.0);
-                int heightThird = (int)((double)img.Height / 20.0);
+                int widthThird = (int)((double)img.Width / 20);
+                int heightThird = (int)((double)img.Height / 20);
                 Bitmap[,] bmps = new Bitmap[20, 20];
                 for (int i = 0; i < 20; i++)
                     for (int j = 0; j < 20; j++)
@@ -471,7 +482,7 @@ namespace Hyperboliq_Assesment
                             if (!System.IO.Directory.Exists($"{ mydirectory}\\imageSet"))
                                 System.IO.Directory.CreateDirectory($"{mydirectory}\\imageSet");
 
-                            bmps[i, j].Save($"{mydirectory}\\imageSet\\{i}{j}.jpg", ImageFormat.Jpeg);
+                            bmps[i, j].Save($"{mydirectory}\\imageSet\\{Guid.NewGuid().ToString()}.bmp");
 
                             originalSplit.Add(new KeyValuePair<Image, Color>(bmps[i, j], Color.Black));
 
